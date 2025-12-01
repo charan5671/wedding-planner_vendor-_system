@@ -1,0 +1,821 @@
+{
+  "users": [
+    {
+      "id": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "name": "kiran",
+      "email": "jobshunt771@gmail.com",
+      "password": "Nothing",
+      "role": "couple"
+    },
+    {
+      "id": "6599bfe4-a5c1-4ccd-815f-13db1408833e",
+      "name": "Test Couple",
+      "email": "couple@test.com",
+      "password": "password",
+      "role": "couple"
+    },
+    {
+      "id": "db87cd79-4def-458b-b168-a07b7b33d8d3",
+      "name": "charan",
+      "email": "couple@test1.com",
+      "password": "Couple@1",
+      "role": "couple"
+    },
+    {
+      "id": "vendor_user_1",
+      "name": "John Photographer",
+      "email": "vendor@test.com",
+      "password": "password",
+      "role": "vendor"
+    },
+    {
+      "id": "6027b235-846e-41c5-b02a-8dfd43c2ca14",
+      "name": "Test User",
+      "email": "test1764468635613@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "f67d71e0-beac-4854-94cc-2d5a8e49739e",
+      "name": "Test User",
+      "email": "test1764469026484@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "9616b9cb-a62b-4be5-9c4b-fba354fb7ee7",
+      "name": "Test User",
+      "email": "test1764469834925@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "e3ffe5d8-8c1b-4c42-9565-7b60f4ef0270",
+      "name": "Test",
+      "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@test.com",
+      "password": "password",
+      "role": "couple"
+    },
+    {
+      "id": "8c1f4e9d-ae4f-4b83-be28-4d19817cfdfb",
+      "name": "kiran",
+      "email": "brainybunch6@gmail.com",
+      "password": "Brainy@123",
+      "role": "couple"
+    },
+    {
+      "id": "ce3bc59b-3056-4f2c-908f-8becc7995530",
+      "name": "Test User",
+      "email": "test1764471636568@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "9757d2a9-d9cf-4c40-b5fb-fb63f7677870",
+      "name": "Test User",
+      "email": "test1764482135851@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "99052ff0-b82d-4f2b-b305-c2d111d75b07",
+      "name": "Test User",
+      "email": "test1764482670557@example.com",
+      "password": "password123",
+      "role": "couple"
+    },
+    {
+      "id": "a31e26d7-6bd8-4825-b310-ad60bb5d9cc9",
+      "name": "Test User",
+      "email": "test1764548851692@example.com",
+      "password": "password123",
+      "role": "couple"
+    }
+  ],
+  "vendors": [
+    {
+      "id": "v1",
+      "userId": "vendor_user_1",
+      "name": "Elegant Moments Photography",
+      "category": "Photographer",
+      "description": "Capturing your special moments with style and elegance. Award-winning photography team with 10+ years experience.",
+      "price": 1500,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "New York, NY",
+      "gallery": [
+        "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-15",
+        "2025-12-20"
+      ],
+      "verified": true,
+      "services": [
+        "Wedding Photography",
+        "Engagement Shoots",
+        "Pre-wedding"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v2",
+      "name": "Grand Ballroom Venue",
+      "category": "Venue",
+      "description": "A luxurious venue for your dream wedding with stunning architecture and world-class amenities.",
+      "price": 5000,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Los Angeles, CA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-11-30",
+        "2025-12-10",
+        "2025-12-25"
+      ],
+      "verified": true,
+      "services": [
+        "Indoor Venue",
+        "Outdoor Garden",
+        "Catering"
+      ],
+      "commission": 10,
+      "blockedDates": []
+    },
+    {
+      "id": "v3",
+      "name": "Floral Fantasies",
+      "category": "Decorator",
+      "description": "Beautiful floral arrangements for any theme. Creating magical atmospheres with fresh flowers.",
+      "price": 800,
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1522673607200-1645062cd495?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Chicago, IL",
+      "gallery": [
+        "https://images.unsplash.com/photo-1522673607200-1645062cd495?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-05",
+        "2025-12-12",
+        "2025-12-18"
+      ],
+      "verified": true,
+      "services": [
+        "Floral Arrangements",
+        "Stage Decoration",
+        "Table Settings"
+      ],
+      "commission": 12,
+      "blockedDates": []
+    },
+    {
+      "id": "v4",
+      "name": "Gourmet Delights Catering",
+      "category": "Caterer",
+      "description": "Exquisite cuisine crafted by award-winning chefs. Farm-to-table ingredients and custom menus.",
+      "price": 3500,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "San Francisco, CA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-08",
+        "2025-12-22"
+      ],
+      "verified": true,
+      "services": [
+        "Full Service Catering",
+        "Custom Menus",
+        "Dessert Bar"
+      ],
+      "commission": 12,
+      "blockedDates": []
+    },
+    {
+      "id": "v5",
+      "name": "Melody Makers Live Band",
+      "category": "Entertainment",
+      "description": "Professional live band specializing in weddings. From jazz to pop, we play it all!",
+      "price": 2000,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1511192336575-5a79af67a629?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Nashville, TN",
+      "gallery": [
+        "https://images.unsplash.com/photo-1511192336575-5a79af67a629?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-03",
+        "2025-12-17",
+        "2025-12-24"
+      ],
+      "verified": true,
+      "services": [
+        "Live Music",
+        "DJ Services",
+        "Sound System"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v6",
+      "name": "Luxe Bridal Boutique",
+      "category": "Bridal Wear",
+      "description": "Designer wedding gowns and custom alterations. Find your perfect dress with our expert stylists.",
+      "price": 2500,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1594552072238-6d7b8e6f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Miami, FL",
+      "gallery": [
+        "https://images.unsplash.com/photo-1594552072238-6d7b8e6f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-02",
+        "2025-12-09",
+        "2025-12-16"
+      ],
+      "verified": true,
+      "services": [
+        "Bridal Gowns",
+        "Alterations",
+        "Accessories"
+      ],
+      "commission": 18,
+      "blockedDates": []
+    },
+    {
+      "id": "v7",
+      "name": "Cinematic Weddings Videography",
+      "category": "Videographer",
+      "description": "Cinematic wedding films that tell your love story. 4K quality with drone footage included.",
+      "price": 1800,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Austin, TX",
+      "gallery": [
+        "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-04",
+        "2025-12-11",
+        "2025-12-18"
+      ],
+      "verified": true,
+      "services": [
+        "Wedding Videography",
+        "Drone Footage",
+        "Same Day Edit"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v8",
+      "name": "Sweet Celebrations Bakery",
+      "category": "Cake Designer",
+      "description": "Custom wedding cakes that taste as amazing as they look. Gluten-free and vegan options available.",
+      "price": 600,
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Portland, OR",
+      "gallery": [
+        "https://images.unsplash.com/photo-1535254973040-607b474cb50d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-08",
+        "2025-12-15"
+      ],
+      "verified": true,
+      "services": [
+        "Custom Cakes",
+        "Cupcakes",
+        "Dessert Tables"
+      ],
+      "commission": 14,
+      "blockedDates": []
+    },
+    {
+      "id": "v9",
+      "name": "Garden Paradise Venue",
+      "category": "Venue",
+      "description": "Enchanting outdoor garden venue with waterfall and gazebo. Perfect for romantic ceremonies.",
+      "price": 4200,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Seattle, WA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-06",
+        "2025-12-13",
+        "2025-12-20"
+      ],
+      "verified": true,
+      "services": [
+        "Outdoor Venue",
+        "Garden Ceremony",
+        "Reception Hall"
+      ],
+      "commission": 10,
+      "blockedDates": []
+    },
+    {
+      "id": "v10",
+      "name": "Artisan Invitations Studio",
+      "category": "Stationery",
+      "description": "Handcrafted wedding invitations and paper goods. Eco-friendly materials and custom designs.",
+      "price": 450,
+      "rating": 4.6,
+      "image": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Boston, MA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-10",
+        "2025-12-20"
+      ],
+      "verified": true,
+      "services": [
+        "Invitations",
+        "Save the Dates",
+        "Thank You Cards"
+      ],
+      "commission": 16,
+      "blockedDates": []
+    },
+    {
+      "id": "v11",
+      "name": "Elite Transportation Services",
+      "category": "Transportation",
+      "description": "Luxury wedding transportation with vintage and modern vehicles. Professional chauffeurs included.",
+      "price": 900,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Las Vegas, NV",
+      "gallery": [
+        "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-05",
+        "2025-12-12",
+        "2025-12-19"
+      ],
+      "verified": true,
+      "services": [
+        "Limousine Service",
+        "Vintage Cars",
+        "Party Bus"
+      ],
+      "commission": 13,
+      "blockedDates": []
+    },
+    {
+      "id": "v12",
+      "name": "Glamour Hair & Makeup Studio",
+      "category": "Hair & Makeup",
+      "description": "Professional bridal hair and makeup artists. On-site services and trial sessions available.",
+      "price": 550,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Atlanta, GA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-02",
+        "2025-12-09",
+        "2025-12-16"
+      ],
+      "verified": true,
+      "services": [
+        "Bridal Makeup",
+        "Hair Styling",
+        "Bridal Party Services"
+      ],
+      "commission": 17,
+      "blockedDates": []
+    },
+    {
+      "id": "v13",
+      "name": "Timeless Moments Photography",
+      "category": "Photographer",
+      "description": "Documentary-style wedding photography capturing authentic emotions. Two photographers included.",
+      "price": 2200,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Denver, CO",
+      "gallery": [
+        "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-07",
+        "2025-12-14",
+        "2025-12-21"
+      ],
+      "verified": true,
+      "services": [
+        "Wedding Photography",
+        "Photo Booth",
+        "Albums"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v14",
+      "name": "Enchanted Events Planning",
+      "category": "Wedding Planner",
+      "description": "Full-service wedding planning and coordination. Stress-free planning from start to finish.",
+      "price": 3000,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Phoenix, AZ",
+      "gallery": [
+        "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-15",
+        "2025-12-22"
+      ],
+      "verified": true,
+      "services": [
+        "Full Planning",
+        "Day-of Coordination",
+        "Vendor Management"
+      ],
+      "commission": 12,
+      "blockedDates": []
+    },
+    {
+      "id": "v15",
+      "name": "Rustic Barn Venue",
+      "category": "Venue",
+      "description": "Charming rustic barn venue with countryside views. Perfect for bohemian and country weddings.",
+      "price": 3200,
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Nashville, TN",
+      "gallery": [
+        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-03",
+        "2025-12-10",
+        "2025-12-17"
+      ],
+      "verified": true,
+      "services": [
+        "Barn Venue",
+        "Outdoor Ceremony",
+        "Rustic Decor"
+      ],
+      "commission": 11,
+      "blockedDates": []
+    },
+    {
+      "id": "v16",
+      "name": "Sparkle & Shine DJ Services",
+      "category": "Entertainment",
+      "description": "Professional DJ services with state-of-the-art equipment and extensive music library.",
+      "price": 1200,
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Orlando, FL",
+      "gallery": [
+        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-04",
+        "2025-12-11",
+        "2025-12-18"
+      ],
+      "verified": true,
+      "services": [
+        "DJ Services",
+        "MC Services",
+        "Lighting"
+      ],
+      "commission": 14,
+      "blockedDates": []
+    },
+    {
+      "id": "v17",
+      "name": "Coastal Elegance Decor",
+      "category": "Decorator",
+      "description": "Sophisticated event decoration with beach and coastal themes. Custom centerpieces and backdrops.",
+      "price": 1100,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1478146896981-b80fe463b330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "San Diego, CA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1478146896981-b80fe463b330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-02",
+        "2025-12-09",
+        "2025-12-16"
+      ],
+      "verified": true,
+      "services": [
+        "Event Decoration",
+        "Centerpieces",
+        "Backdrop Design"
+      ],
+      "commission": 13,
+      "blockedDates": []
+    },
+    {
+      "id": "v18",
+      "name": "Vintage Charm Rentals",
+      "category": "Rentals",
+      "description": "Unique vintage furniture and decor rentals. From antique chairs to rustic tables.",
+      "price": 750,
+      "rating": 4.6,
+      "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Charleston, SC",
+      "gallery": [
+        "https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-05",
+        "2025-12-12",
+        "2025-12-19"
+      ],
+      "verified": true,
+      "services": [
+        "Furniture Rentals",
+        "Decor Items",
+        "Tableware"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v19",
+      "name": "Blissful Spa & Beauty",
+      "category": "Hair & Makeup",
+      "description": "Luxury spa services and bridal beauty packages. Relax and get pampered before your big day.",
+      "price": 680,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Scottsdale, AZ",
+      "gallery": [
+        "https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-01",
+        "2025-12-08",
+        "2025-12-15"
+      ],
+      "verified": true,
+      "services": [
+        "Spa Services",
+        "Bridal Packages",
+        "Nail Art"
+      ],
+      "commission": 16,
+      "blockedDates": []
+    },
+    {
+      "id": "v20",
+      "name": "Skyline Rooftop Venue",
+      "category": "Venue",
+      "description": "Modern rooftop venue with panoramic city views. Perfect for contemporary urban weddings.",
+      "price": 6000,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1478146896981-b80fe463b330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "New York, NY",
+      "gallery": [
+        "https://images.unsplash.com/photo-1478146896981-b80fe463b330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-06",
+        "2025-12-13",
+        "2025-12-20"
+      ],
+      "verified": true,
+      "services": [
+        "Rooftop Venue",
+        "City Views",
+        "Modern Amenities"
+      ],
+      "commission": 10,
+      "blockedDates": []
+    },
+    {
+      "id": "v21",
+      "name": "Tropical Paradise Catering",
+      "category": "Caterer",
+      "description": "Island-inspired cuisine with fresh seafood and tropical flavors. Perfect for beach weddings.",
+      "price": 2800,
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Honolulu, HI",
+      "gallery": [
+        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-02",
+        "2025-12-09",
+        "2025-12-16"
+      ],
+      "verified": true,
+      "services": [
+        "Tropical Cuisine",
+        "Seafood Bar",
+        "Tiki Bar"
+      ],
+      "commission": 12,
+      "blockedDates": []
+    },
+    {
+      "id": "v22",
+      "name": "Classic Strings Quartet",
+      "category": "Entertainment",
+      "description": "Elegant string quartet for ceremonies and cocktail hours. Classical and contemporary repertoire.",
+      "price": 1500,
+      "rating": 4.9,
+      "image": "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Philadelphia, PA",
+      "gallery": [
+        "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-07",
+        "2025-12-14",
+        "2025-12-21"
+      ],
+      "verified": true,
+      "services": [
+        "String Quartet",
+        "Ceremony Music",
+        "Cocktail Hour"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    },
+    {
+      "id": "v23",
+      "name": "Memories Forever Videography",
+      "category": "Videographer",
+      "description": "Artistic wedding videography with same-day highlights. Capturing every precious moment in HD.",
+      "price": 1600,
+      "rating": 4.8,
+      "image": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "location": "Dallas, TX",
+      "gallery": [
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      ],
+      "availability": [
+        "2025-12-03",
+        "2025-12-10",
+        "2025-12-17"
+      ],
+      "verified": true,
+      "services": [
+        "Wedding Videos",
+        "Highlight Reels",
+        "Raw Footage"
+      ],
+      "commission": 15,
+      "blockedDates": []
+    }
+  ],
+  "bookings": [
+    {
+      "id": "bcef0e66-dd04-40fa-8262-1cb856f9513b",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:20.257Z"
+    },
+    {
+      "id": "9b61351e-ae73-4028-a31f-6683b4ee7243",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:22.245Z"
+    },
+    {
+      "id": "ab141ecd-1461-469f-b324-6bb85be6a898",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:22.403Z"
+    },
+    {
+      "id": "39e08d36-f478-4758-9648-2f2695b272cf",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:22.570Z"
+    },
+    {
+      "id": "c7adceef-12fa-4db6-8aec-820d8d741359",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:22.725Z"
+    },
+    {
+      "id": "cee272ff-7913-41e2-aab3-2036ded85649",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:24.060Z"
+    },
+    {
+      "id": "f0d6c774-d9fe-49d2-aa78-227d1b9645a8",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:25.025Z"
+    },
+    {
+      "id": "65ba1cd6-1d36-4702-8e95-0330330d4977",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:25.970Z"
+    },
+    {
+      "id": "b923a8fe-72f2-463d-95ed-424f121c9dd5",
+      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
+      "vendorId": "v2",
+      "date": "2025-11-28",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-27T06:39:27.067Z"
+    },
+    {
+      "id": "715411da-6aad-4236-b00c-d799c45ff92e",
+      "userId": "admin1",
+      "vendorId": "v1",
+      "date": "2025-11-30",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-29T00:43:11.867Z"
+    },
+    {
+      "id": "8f9700d5-f13b-42b0-aff7-3655542eb885",
+      "userId": "8c1f4e9d-ae4f-4b83-be28-4d19817cfdfb",
+      "vendorId": "v1",
+      "date": "2025-12-01",
+      "time": "14:00",
+      "status": "pending",
+      "createdAt": "2025-11-30T02:37:19.193Z"
+    }
+  ],
+  "enquiries": [],
+  "reviews": [],
+  "budgets": [],
+  "notifications": [],
+  "admins": [
+    {
+      "id": "admin1",
+      "email": "admin@bliss.com",
+      "password": "admin123",
+      "name": "Admin User"
+    }
+  ],
+  "payments": [],
+  "wishlist": [],
+  "messages": [
+    {
+      "id": "m1764464705638",
+      "senderId": "user1",
+      "receiverId": "vendor1",
+      "text": "Hello from test script!",
+      "timestamp": "2025-11-30T01:05:05.638Z",
+      "read": false
+    }
+  ]
+}

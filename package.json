@@ -1,0 +1,13 @@
+{
+    "name": "wedding-planner-root",
+    "version": "1.0.0",
+    "type": "module",
+    "dependencies": {
+        "serverless-http": "^3.2.0",
+        "express": "^4.18.2",
+        "cors": "^2.8.5",
+        "lowdb": "^7.0.1",
+        "socket.io": "^4.7.4",
+        "uuid": "^9.0.1"
+    }
+}

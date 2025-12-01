@@ -1,0 +1,26 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/app.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
