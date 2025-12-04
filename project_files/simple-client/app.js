@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3002'; // Will use mock data fallback in production
+const API_URL = 'http://localhost:3000'; // Will use mock data fallback in production
 
 // --- Mock Data for Demo (Fallback) ---
 const MOCK_VENDORS = [

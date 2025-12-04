@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3000;
 
 // Only start server if not running in serverless environment
 if (!process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_VERSION) {
