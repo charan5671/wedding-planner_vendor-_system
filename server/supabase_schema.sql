@@ -159,6 +159,29 @@ CREATE POLICY "Couples can create reviews for completed bookings" ON public.revi
 );
 
 -- --------------------------------------------------------
+-- 8. ENQUIRIES (Pre-booking questions)
+-- --------------------------------------------------------
+CREATE TABLE public.enquiries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.profiles(id), -- Optional, might be guest
+    vendor_id UUID NOT NULL REFERENCES public.vendors(id),
+    userName TEXT,
+    userEmail TEXT,
+    message TEXT,
+    status enquiry_status DEFAULT 'unread',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS
+ALTER TABLE public.enquiries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Vendors view received enquiries" ON public.enquiries FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.vendors WHERE id = enquiries.vendor_id AND user_id = auth.uid())
+);
+CREATE POLICY "Users view own sent enquiries" ON public.enquiries FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Everyone can insert enquiries" ON public.enquiries FOR INSERT WITH CHECK (true);
+
+-- --------------------------------------------------------
 -- 9. REPORTS (Moderation)
 -- --------------------------------------------------------
 CREATE TABLE public.reports (
