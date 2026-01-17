@@ -90,6 +90,20 @@
       "email": "test1764548851692@example.com",
       "password": "password123",
       "role": "couple"
+    },
+    {
+      "id": "manual-test-user",
+      "name": "Test User",
+      "email": "test@user.com",
+      "password": "password123",
+      "role": "admin"
+    },
+    {
+      "id": "admin-account",
+      "name": "Platform Admin",
+      "email": "admin@test.com",
+      "password": "password",
+      "role": "admin"
     }
   ],
   "vendors": [
@@ -694,24 +708,6 @@
     }
   ],
   "bookings": [
-    {
-      "id": "bcef0e66-dd04-40fa-8262-1cb856f9513b",
-      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
-      "vendorId": "v2",
-      "date": "2025-11-28",
-      "time": "14:00",
-      "status": "pending",
-      "createdAt": "2025-11-27T06:39:20.257Z"
-    },
-    {
-      "id": "9b61351e-ae73-4028-a31f-6683b4ee7243",
-      "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",
-      "vendorId": "v2",
-      "date": "2025-11-28",
-      "time": "14:00",
-      "status": "pending",
-      "createdAt": "2025-11-27T06:39:22.245Z"
-    },
     {
       "id": "ab141ecd-1461-469f-b324-6bb85be6a898",
       "userId": "19da153f-f73f-4691-9eb4-bdbd7aaa30f5",

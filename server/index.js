@@ -2,89 +2,296 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { JSONFilePreset } from 'lowdb/node';
-import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+// Import Routes
+import adminRoutes from './routes/admin.js';
+import vendorRoutes from './routes/vendors.js';
+import authRoutes from './routes/auth.js';
+// import bookingRoutes from './routes/bookings.js';
+// import budgetRoutes from './routes/budget.js';
+// import notificationRoutes from './routes/notifications.js';
+// import wishlistRoutes from './routes/wishlist.js';
+// import reviewRoutes from './routes/reviews.js';
+// import paymentRoutes from './routes/payments.js';
+// import analyticsRoutes from './routes/analytics.js';
+// import enquiryRoutes from './routes/enquiries.js';
+// import messageRoutes from './routes/messages.js';
+
+dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*", // Allow all for demo
-        methods: ["GET", "POST"]
-    }
-});
+const PORT = process.env.PORT || 3002;
 
-// Middleware
+// --- SUPABASE CONFIGURATION ---
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+let supabase;
+const isPlaceholder = (url) => url === 'YOUR_SUPABASE_URL_HERE' || url === 'https://placeholder.supabase.co';
+
+if (supabaseUrl && supabaseServiceKey && !isPlaceholder(supabaseUrl)) {
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('✅ Supabase Client Initialized');
+} else {
+    console.warn('⚠️ Supabase credentials missing or placeholder. Server will default to mock mode.');
+    supabase = null;
+}
+
 app.use(cors());
 app.use(express.json());
 
-import db from './db.js';
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 
-import authRoutes from './routes/auth.js';
-import vendorRoutes from './routes/vendors.js';
-import bookingRoutes from './routes/bookings.js';
-import budgetRoutes from './routes/budget.js';
-import notificationRoutes from './routes/notifications.js';
-import adminRoutes from './routes/admin.js';
-import wishlistRoutes from './routes/wishlist.js';
-import reviewRoutes from './routes/reviews.js';
-import paymentRoutes from './routes/payments.js';
-import analyticsRoutes from './routes/analytics.js';
-import enquiryRoutes from './routes/enquiries.js';
-import messageRoutes from './routes/messages.js';
-
+// --- ROUTES ---
 app.use('/api/auth', authRoutes);
-app.use('/api/vendors', vendorRoutes);
-app.use('/api/bookings', bookingRoutes(io));
-app.use('/api/budget', budgetRoutes);
-app.use('/api/notifications', notificationRoutes(io));
 app.use('/api/admin', adminRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/enquiries', enquiryRoutes);
-app.use('/api/messages', messageRoutes);
 
-// Socket.io
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+app.use('/api/vendors', (req, res, next) => {
+    req.supabase = supabase;
+    next();
+}, vendorRoutes);
 
-    socket.on('join-room', (userId) => {
-        socket.join(userId);
-        console.log(`User ${userId} joined room`);
+
+// --- HEALTH CHECK ---
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        database: supabase ? 'connected' : 'mock'
     });
+});
 
-    socket.on('send-message', async (message) => {
-        // Save to DB
-        await db.read();
-        const newMessage = {
-            id: `m${Date.now()}`,
-            ...message,
-            timestamp: new Date().toISOString(),
-            read: false
-        };
-        db.data.messages.push(newMessage);
-        await db.write();
+// --- CORE API ENDPOINTS (Bookings, Negotiation) ---
 
-        // Emit to receiver
-        io.to(message.receiverId).emit('receive-message', newMessage);
-        // Emit back to sender (for confirmation/multi-device)
-        io.to(message.senderId).emit('receive-message', newMessage);
+app.get('/api/bookings', async (req, res) => {
+    if (!supabase) {
+        // Fallback mock bookings
+        const mockBookings = [
+            { id: 'b1', user_id: '1', vendor_id: 'v1', status: 'confirmed', total_amount: 1200, created_at: new Date().toISOString(), vendor: { business_name: 'Elegant Florals' }, user: { full_name: 'John Doe' } },
+            { id: 'b2', user_id: '1', vendor_id: 'v2', status: 'pending', total_amount: 2500, created_at: new Date().toISOString(), vendor: { business_name: 'Classic Catering' }, user: { full_name: 'John Doe' } }
+        ];
+        return res.json(mockBookings);
+    }
 
-        // Notification
-        io.to(message.receiverId).emit(`notification-${message.receiverId}`, {
-            title: 'New Message',
-            message: `You have a new message from ${message.senderName || 'a user'}`
+    const { userId, vendorId } = req.query;
+    let query = supabase.from('bookings').select('*, vendor:vendors(business_name), user:profiles(full_name)');
+
+    if (userId) query = query.eq('user_id', userId);
+    if (vendorId) query = query.eq('vendor_id', vendorId);
+
+    const { data, error } = await query;
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.patch('/api/bookings/:id', async (req, res) => {
+    if (!supabase) {
+        const io = req.app.get('io');
+        if (io) io.emit('booking-updated', { bookingId: req.params.id, status: req.body.status });
+        return res.json({ id: req.params.id, status: req.body.status });
+    }
+    const { status } = req.body;
+    const { data, error } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', req.params.id)
+        .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    const io = req.app.get('io');
+    if (io) io.emit('booking-status-updated', { bookingId: req.params.id, status });
+
+    res.json(data);
+});
+
+app.get('/api/enquiries/vendor/:vendorId', async (req, res) => {
+    if (!supabase) {
+        return res.json([{
+            id: 'e1',
+            vendor_id: req.params.vendorId,
+            userName: 'John Demo',
+            userEmail: 'john@demo.com',
+            message: 'Interested in your services!',
+            status: 'pending',
+            created_at: new Date().toISOString()
+        }]);
+    }
+    const { data, error } = await supabase
+        .from('enquiries')
+        .select('*')
+        .eq('vendor_id', req.params.vendorId)
+        .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get('/api/enquiries/:id', async (req, res) => {
+    if (!supabase) {
+        return res.json({
+            id: req.params.id,
+            userName: 'John Demo',
+            userEmail: 'john@demo.com',
+            message: 'Interested in your services!',
+            status: 'pending',
+            created_at: new Date().toISOString()
         });
+    }
+    const { data, error } = await supabase
+        .from('enquiries')
+        .select('*')
+        .eq('id', req.params.id)
+        .single();
+    if (error) return res.status(404).json({ message: 'Enquiry not found' });
+    res.json(data);
+});
+
+app.post('/api/enquiries', async (req, res) => {
+    if (!supabase) {
+        return res.status(201).json({
+            id: 'mock_e_' + Date.now(),
+            ...req.body,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
+    }
+    const { vendorId, userId, message, userName, userEmail } = req.body;
+    const { data, error } = await supabase.from('enquiries').insert({
+        vendor_id: vendorId,
+        user_id: userId,
+        message,
+        userName,
+        userEmail
+    }).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.status(201).json(data);
+});
+
+app.get('/api/messages/:contextId', async (req, res) => {
+    if (!supabase) {
+        return res.json([
+            { id: 'm1', content: 'Hello, I have a question about your package.', sender_id: 'u1', created_at: new Date().toISOString() },
+            { id: 'm2', content: 'Sure, how can I help?', sender_id: 'v1', created_at: new Date().toISOString() }
+        ]);
+    }
+    const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`booking_id.eq.${req.params.contextId},enquiry_id.eq.${req.params.contextId}`)
+        .order('created_at', { ascending: true });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get('/api/negotiation/:id', async (req, res) => {
+    if (!supabase) {
+        return res.json({
+            contextItem: {
+                id: req.params.id,
+                status: 'pending',
+                userName: 'John Demo',
+                userEmail: 'john@demo.com',
+                message: 'Hello, looking for a package.',
+                isEnquiry: true
+            },
+            messages: [
+                { id: 'm1', content: 'Hello, I have a question about your package.', sender_id: 'u1', created_at: new Date().toISOString() },
+                { id: 'm2', content: 'Sure, how can I help?', sender_id: 'v1', created_at: new Date().toISOString() }
+            ]
+        });
+    }
+
+    const bookingId = req.params.id;
+    // ... rest of the logic
+
+    // Check if it's a booking or an enquiry
+    let { data: booking } = await supabase
+        .from('bookings')
+        .select(`*, vendor:vendors(*), user:profiles(*), service:services(*)`)
+        .eq('id', bookingId)
+        .single();
+
+    if (!booking) {
+        // Try enquiry
+        const { data: enquiry } = await supabase
+            .from('enquiries')
+            .select('*')
+            .eq('id', bookingId)
+            .single();
+
+        if (enquiry) {
+            // Transform enquiry to match contextItem expected by frontend
+            booking = {
+                id: enquiry.id,
+                status: enquiry.status || 'pending',
+                userId: enquiry.user_id,
+                vendorId: enquiry.vendor_id,
+                userName: enquiry.userName,
+                userEmail: enquiry.userEmail,
+                message: enquiry.message,
+                isEnquiry: true
+            };
+        }
+    }
+
+    if (!booking) return res.status(404).json({ message: 'Context not found' });
+
+    const { data: messages } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`booking_id.eq.${bookingId},enquiry_id.eq.${bookingId}`)
+        .order('created_at', { ascending: true });
+
+    res.json({ contextItem: booking, messages });
+});
+
+
+// --- REAL-TIME SERVER ---
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+app.set('io', io);
+
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    socket.on('join-room', (roomId) => {
+        socket.join(roomId);
+        console.log(`User ${socket.id} joined room ${roomId}`);
     });
 
-    socket.on('typing', ({ senderId, receiverId }) => {
-        io.to(receiverId).emit('user-typing', { senderId });
-    });
+    socket.on('send-message', async (data) => {
+        const roomId = data.bookingId || data.enquiryId;
+        if (supabase) {
+            const { error } = await supabase.from('messages').insert({
+                booking_id: data.bookingId || null,
+                enquiry_id: data.enquiryId || null,
+                sender_id: data.senderId,
+                content: data.content,
+                type: data.type || 'text',
+                metadata: data.metadata || null
+            });
+            if (error) console.error('Error saving message:', error);
 
-    socket.on('stop-typing', ({ senderId, receiverId }) => {
-        io.to(receiverId).emit('user-stop-typing', { senderId });
+            if (data.type === 'acceptance') {
+                if (data.bookingId) {
+                    await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', data.bookingId);
+                } else if (data.enquiryId) {
+                    await supabase.from('enquiries').update({ status: 'confirmed' }).eq('id', data.enquiryId);
+                }
+                io.to(roomId).emit('status-change', 'confirmed');
+            }
+        }
+        io.to(roomId).emit('receive-message', data);
     });
 
     socket.on('disconnect', () => {
@@ -92,13 +299,18 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3002;
-
-// Only start server if not running in serverless environment
-if (!process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-    server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+// --- CATCH-ALL FOR DIAGNOSTICS ---
+app.use((req, res) => {
+    console.warn(`[404] Unmatched request: ${req.method} ${req.url}`);
+    res.status(404).json({
+        error: 'Route not found',
+        method: req.method,
+        url: req.url,
+        hint: 'Check if the API prefix /api is present and the server is running on port 3002'
     });
-}
+});
 
-export { app };
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+});

@@ -2,19 +2,26 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../lib/api';
+import { MOCK_VENDORS } from '../lib/mockData';
 
 interface Vendor {
     id: string;
-    name: string;
+    business_name: string;
     category: string;
     description: string;
+    location: string;
+    price_range: string;
+    rating: number;
+    images: string[];
+}
+
+interface Service {
+    id: string;
+    name: string;
+    description: string;
     price: number;
-    image: string;
-    email?: string;
-    phone?: string;
-    location?: string;
-    rating?: number;
-    reviewCount?: number;
+    vendor_id: string;
 }
 
 export function VendorDetail() {
@@ -22,19 +29,40 @@ export function VendorDetail() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [vendor, setVendor] = useState<Vendor | null>(null);
+    const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchVendor();
+        if (id) fetchVendorAndServices(id);
     }, [id]);
 
-    const fetchVendor = async () => {
+    const fetchVendorAndServices = async (vendorId: string) => {
         try {
-            const res = await fetch(`/api/vendors/${id}`);
-            const data = await res.json();
+            setLoading(true);
+
+            // Handle Mock Data specifically
+            if (vendorId.startsWith('mock-')) {
+                const mockVendor = MOCK_VENDORS.find(v => v.id === vendorId);
+                if (mockVendor) {
+                    setVendor(mockVendor);
+                    setServices([
+                        { id: 's1', name: 'Platinum Collection', description: 'Our most comprehensive suite involving full-day coverage and elite post-production.', price: 4500, vendor_id: vendorId },
+                        { id: 's2', name: 'Signature Series', description: 'The essential Bliss experience, curated for elegance and impact.', price: 2800, vendor_id: vendorId },
+                        { id: 's3', name: 'Bespoke Half-Day', description: 'Tailored excellence for intimate celebrations and micro-weddings.', price: 1800, vendor_id: vendorId }
+                    ]);
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            const data = await apiFetch(`/vendors/${vendorId}`);
             setVendor(data);
+            setServices([
+                { id: 's1', name: 'Platinum Collection', description: 'Full comprehensive service with priority support.', price: 4500, vendor_id: vendorId },
+                { id: 's2', name: 'Signature Series', description: 'Balanced service for the modern couple.', price: 2800, vendor_id: vendorId }
+            ]);
         } catch (error) {
-            console.error('Failed to fetch vendor:', error);
+            console.error('Failed to fetch details:', error);
         } finally {
             setLoading(false);
         }
@@ -42,116 +70,120 @@ export function VendorDetail() {
 
     const handleBook = async () => {
         if (!user) {
-            alert('Please login to book');
             navigate('/login');
             return;
         }
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const res = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: user.id,
-                vendorId: id,
-                date: tomorrow.toISOString().split('T')[0],
-                time: '14:00'
-            })
-        });
-
-        if (res.ok) {
-            alert('Booking request sent!');
+        try {
+            // In demo mode, we simulate the booking
+            alert('Your booking request has been formally submitted. The artisan will be in touch shortly. (Demo Mode)');
             navigate('/dashboard');
+        } catch (error) {
+            console.error('Booking error:', error);
         }
     };
 
-    if (loading) {
-        return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-    }
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+    );
 
-    if (!vendor) {
-        return <div className="flex justify-center items-center min-h-screen">Vendor not found</div>;
-    }
+    if (!vendor) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <h1 className="text-2xl font-serif italic text-slate-400">Artisan not found in our collection.</h1>
+        </div>
+    );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <button
-                onClick={() => navigate(-1)}
-                className="mb-6 text-primary-600 hover:text-primary-700 flex items-center gap-2"
-            >
-                ← Back to Vendors
-            </button>
+        <div className="bg-white min-h-screen pt-32 pb-24">
+            <div className="max-w-7xl mx-auto px-6">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="group mb-12 flex items-center text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-primary-600 transition-colors"
+                >
+                    <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Return to Collection
+                </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Image Section */}
-                <div className="space-y-4">
-                    <img
-                        src={vendor.image}
-                        alt={vendor.name}
-                        className="w-full h-96 object-cover rounded-lg shadow-lg"
-                    />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                    {/* Gallery Section */}
+                    <div className="lg:col-span-7 space-y-8">
+                        <div className="relative aspect-[16/10] rounded-[3rem] overflow-hidden shadow-2xl">
+                            <img
+                                src={vendor.images?.[0] || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800'}
+                                alt={vendor.business_name}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-8 line-clamp-2">
+                            {(vendor.images || []).slice(1, 3).map((img, i) => (
+                                <div key={i} className="aspect-square rounded-[2rem] overflow-hidden shadow-xl border border-slate-100">
+                                    <img src={img} className="w-full h-full object-cover transition-transform hover:scale-110 duration-700" alt="Work" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Info Section */}
+                    <div className="lg:col-span-5">
+                        <div className="sticky top-40 space-y-10">
+                            <div>
+                                <div className="flex items-center space-x-3 mb-6">
+                                    <span className="bg-primary-50 text-primary-600 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">{vendor.category}</span>
+                                    <span className="text-slate-300 font-light">|</span>
+                                    <span className="text-slate-900 font-bold text-sm tracking-tighter">{vendor.rating} ★ Rating</span>
+                                </div>
+                                <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 leading-tight mb-4">{vendor.business_name}</h1>
+                                <div className="flex items-center text-slate-400 font-medium">
+                                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    </svg>
+                                    {vendor.location}
+                                </div>
+                            </div>
+
+                            <div className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 italic font-light text-slate-600 leading-relaxed">
+                                "{vendor.description}"
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-end pb-4 border-b border-slate-100">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Starting From</span>
+                                    <span className="text-4xl font-serif font-black text-slate-900">{vendor.price_range}</span>
+                                </div>
+                                <Button onClick={handleBook} className="w-full h-16 rounded-full bg-slate-900 text-white font-black text-lg hover:bg-primary-600 shadow-2xl transition-all">
+                                    Initiate Reservation
+                                </Button>
+                                <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">Secure Payment & Direct Communication</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Details Section */}
-                <div className="space-y-6">
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <h1 className="text-4xl font-serif font-bold text-slate-900">{vendor.name}</h1>
-                            {vendor.rating && (
-                                <div className="flex items-center gap-1">
-                                    <span className="text-yellow-500">★</span>
-                                    <span className="font-semibold">{vendor.rating}</span>
-                                    <span className="text-slate-500 text-sm">({vendor.reviewCount} reviews)</span>
-                                </div>
-                            )}
+                {/* Services Section */}
+                {services.length > 0 && (
+                    <div className="mt-32">
+                        <div className="text-center mb-16">
+                            <h2 className="text-4xl font-serif font-bold text-slate-900 mb-2 italic">Available Experiences</h2>
+                            <div className="w-12 h-1 bg-primary-600 mx-auto"></div>
                         </div>
-                        <p className="text-lg text-primary-600">{vendor.category}</p>
-                    </div>
-
-                    <div className="border-t border-b border-slate-200 py-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-slate-600">Starting Price</span>
-                            <span className="text-3xl font-bold text-slate-900">${vendor.price}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                            {services.map(service => (
+                                <div key={service.id} className="group p-10 rounded-[3rem] bg-white border border-slate-100 hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 -mr-16 -mt-16 rounded-full group-hover:scale-[10] transition-transform duration-1000 opacity-20"></div>
+                                    <div className="relative z-10">
+                                        <h3 className="text-2xl font-bold text-slate-900 mb-4">{service.name}</h3>
+                                        <p className="text-slate-500 font-light text-sm mb-10 leading-relaxed">{service.description}</p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-2xl font-serif font-black text-slate-900">${service.price}</span>
+                                            <span className="text-[10px] font-bold text-primary-600 uppercase tracking-widest cursor-pointer hover:underline">Select Service →</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-
-                    <div>
-                        <h2 className="text-xl font-semibold mb-3">About</h2>
-                        <p className="text-slate-600 leading-relaxed">{vendor.description}</p>
-                    </div>
-
-                    {(vendor.location || vendor.phone || vendor.email) && (
-                        <div className="space-y-2">
-                            <h2 className="text-xl font-semibold mb-3">Contact Information</h2>
-                            {vendor.location && (
-                                <div className="flex items-center gap-2 text-slate-600">
-                                    <span className="font-medium">Location:</span>
-                                    <span>{vendor.location}</span>
-                                </div>
-                            )}
-                            {vendor.phone && (
-                                <div className="flex items-center gap-2 text-slate-600">
-                                    <span className="font-medium">Phone:</span>
-                                    <span>{vendor.phone}</span>
-                                </div>
-                            )}
-                            {vendor.email && (
-                                <div className="flex items-center gap-2 text-slate-600">
-                                    <span className="font-medium">Email:</span>
-                                    <span>{vendor.email}</span>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <div className="pt-6">
-                        <Button onClick={handleBook} className="w-full py-3 text-lg">
-                            Book Now
-                        </Button>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );

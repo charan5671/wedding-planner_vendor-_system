@@ -1,39 +1,125 @@
 import express from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import { JSONFilePreset } from 'lowdb/node';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
-const defaultData = { users: [], vendors: [], bookings: [], reviews: [] };
-const db = await JSONFilePreset('db.json', defaultData);
+
+// Initialize Supabase client
+const supabase = createClient(
+    process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.SUPABASE_SERVICE_KEY || 'placeholder'
+);
+
+// Helper to check connection
+const isDbConfigured = () => {
+    return process.env.SUPABASE_URL &&
+        process.env.SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE' &&
+        process.env.SUPABASE_URL !== 'https://placeholder.supabase.co';
+};
+
+const checkDb = (res) => {
+    if (!isDbConfigured()) {
+        res.status(503).json({ message: 'Database not connected. Please configure .env' });
+        return false;
+    }
+    return true;
+};
 
 // Register
 router.post('/register', async (req, res) => {
     const { name, email, password, role } = req.body;
-    await db.read();
 
-    const existingUser = db.data.users.find(u => u.email === email);
-    if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
+    if (!isDbConfigured()) {
+        return res.status(201).json({
+            user: {
+                id: 'mock_' + Date.now(),
+                name,
+                email,
+                role: role || 'couple'
+            }
+        });
     }
 
-    const newUser = { id: uuidv4(), name, email, password, role };
-    db.data.users.push(newUser);
-    await db.write();
+    // 1. Create User in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: name,
+                role: role || 'couple'
+            }
+        }
+    });
 
-    res.status(201).json({ user: { id: newUser.id, name, email, role } });
+    if (authError) return res.status(400).json({ message: authError.message });
+
+    // 2. Profile is automatically created via trigger in our schema!
+    // But for immediate response consistency:
+    const userProfile = {
+        id: authData?.user?.id || 'mock_user_id',
+        name: name,
+        email: email,
+        role: role || 'couple'
+    };
+
+    res.status(201).json({ user: userProfile });
 });
 
 // Login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    await db.read();
 
-    const user = db.data.users.find(u => u.email === email && u.password === password);
-    if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+    // Fallback for demo/missing config
+    if (!isDbConfigured()) {
+        if (email === 'admin@bliss.com' && password === 'admin123') {
+            return res.json({
+                user: {
+                    id: 'admin_mock_id',
+                    name: 'Platform Admin',
+                    email: 'admin@bliss.com',
+                    role: 'admin'
+                }
+            });
+        }
+        if (email === 'vendor@bliss.com' && password === 'vendor123') {
+            return res.json({
+                user: {
+                    id: 'vendor_mock_id',
+                    name: 'Premium Vendor',
+                    email: 'vendor@bliss.com',
+                    role: 'vendor'
+                }
+            });
+        }
+        return res.status(401).json({ message: 'Invalid credentials. Use admin@bliss.com/admin123 or vendor@bliss.com/vendor123 for demo.' });
     }
 
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) return res.status(401).json({ message: 'Invalid credentials' });
+
+    // Fetch Profile
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+    if (profileError) return res.status(500).json({ message: 'Error fetching profile' });
+
+    res.json({
+        user: {
+            id: profile.id,
+            name: profile.full_name || 'User',
+            email: profile.email,
+            role: profile.role
+        }
+    });
 });
 
 export default router;
