@@ -8,7 +8,6 @@ const __dirname = path.dirname(__filename)
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/wedding-planner_vendor-_system/',
     plugins: [react()],
     resolve: {
         alias: {

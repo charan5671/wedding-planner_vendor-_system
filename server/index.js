@@ -39,7 +39,10 @@ if (supabaseUrl && supabaseServiceKey && !isPlaceholder(supabaseUrl)) {
     supabase = null;
 }
 
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://wedding-planner-system-trial.netlify.app', process.env.FRONTEND_URL],
+    credentials: true
+}));
 app.use(express.json());
 
 app.use((req, res, next) => {
