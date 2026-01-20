@@ -1,4 +1,4 @@
-import { MockBackend } from './mockBackend';
+// import { MockBackend } from './mockBackend'; // Mock Removed
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -17,20 +17,13 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         });
 
         if (!response.ok) {
-            // If 404 or Server Error, try Mock
-            if (response.status >= 500 || response.status === 404) {
-                console.warn(`[API] Fallback to Mock for ${endpoint} (Status: ${response.status})`);
-                return await MockBackend.handleRequest(options.method || 'GET', endpoint, options.body ? JSON.parse(options.body as string) : undefined);
-            }
-
             const error = await response.json().catch(() => ({ message: 'An unexpected error occurred' }));
             throw new Error(error.message || response.statusText);
         }
 
         return await response.json();
     } catch (error) {
-        console.warn(`[API] Network Error for ${endpoint}. Switching to Mock Backend.`);
-        // Network Error (e.g., Backend not deployed/reachable) -> Mock Fallback
-        return await MockBackend.handleRequest(options.method || 'GET', endpoint, options.body ? JSON.parse(options.body as string) : undefined);
+        console.error(`[API] Network Error for ${endpoint}:`, error);
+        throw error;
     }
 }

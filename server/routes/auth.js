@@ -27,18 +27,17 @@ const checkDb = (res) => {
 };
 
 // Register
+// Register
 router.post('/register', async (req, res) => {
     const { name, email, password, role } = req.body;
 
+    // Validation
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required.' });
+    }
+
     if (!isDbConfigured()) {
-        return res.status(201).json({
-            user: {
-                id: 'mock_' + Date.now(),
-                name,
-                email,
-                role: role || 'couple'
-            }
-        });
+        return res.status(503).json({ message: 'Database configuration missing. Please check server logs.' });
     }
 
     // 1. Create User in Supabase Auth
@@ -55,10 +54,14 @@ router.post('/register', async (req, res) => {
 
     if (authError) return res.status(400).json({ message: authError.message });
 
+    if (!authData.user) {
+        return res.status(500).json({ message: 'User creation failed without error.' });
+    }
+
     // 2. Profile is automatically created via trigger in our schema!
-    // But for immediate response consistency:
+    // We construct the response object manually for immediate use
     const userProfile = {
-        id: authData?.user?.id || 'mock_user_id',
+        id: authData.user.id,
         name: name,
         email: email,
         role: role || 'couple'
@@ -71,29 +74,12 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Fallback for demo/missing config
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
     if (!isDbConfigured()) {
-        if (email === 'admin@bliss.com' && password === 'admin123') {
-            return res.json({
-                user: {
-                    id: 'admin_mock_id',
-                    name: 'Platform Admin',
-                    email: 'admin@bliss.com',
-                    role: 'admin'
-                }
-            });
-        }
-        if (email === 'vendor@bliss.com' && password === 'vendor123') {
-            return res.json({
-                user: {
-                    id: 'vendor_mock_id',
-                    name: 'Premium Vendor',
-                    email: 'vendor@bliss.com',
-                    role: 'vendor'
-                }
-            });
-        }
-        return res.status(401).json({ message: 'Invalid credentials. Use admin@bliss.com/admin123 or vendor@bliss.com/vendor123 for demo.' });
+        return res.status(503).json({ message: 'Database configuration missing.' });
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({

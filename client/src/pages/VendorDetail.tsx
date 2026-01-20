@@ -74,12 +74,34 @@ export function VendorDetail() {
             return;
         }
 
+        const messageEl = document.getElementById('enquiry-message') as HTMLTextAreaElement;
+        const message = messageEl?.value;
+
+        if (!message) {
+            alert('Please enter a brief message to start the conversation.');
+            return;
+        }
+
         try {
-            // In demo mode, we simulate the booking
-            alert('Your booking request has been formally submitted. The artisan will be in touch shortly. (Demo Mode)');
-            navigate('/dashboard');
+            setLoading(true);
+            const response = await apiFetch('/enquiries', {
+                method: 'POST',
+                body: JSON.stringify({
+                    vendorId: vendor?.id,
+                    userId: user.uid || user.id,
+                    message: message,
+                    userName: profile?.name || user.displayName,
+                    userEmail: profile?.email
+                })
+            });
+
+            // Redirect to negotiation room
+            navigate(`/negotiation/${response.id}`);
         } catch (error) {
             console.error('Booking error:', error);
+            alert('Failed to send inquiry. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -147,43 +169,55 @@ export function VendorDetail() {
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex justify-between items-end pb-4 border-b border-slate-100">
-                                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Starting From</span>
-                                    <span className="text-4xl font-serif font-black text-slate-900">{vendor.price_range}</span>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-end pb-4 border-b border-slate-100">
+                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Starting From</span>
+                                        <span className="text-4xl font-serif font-black text-slate-900">{vendor.price_range}</span>
+                                    </div>
+
+                                    {/* Enquiry Input Logic */}
+                                    <div className="space-y-3">
+                                        <textarea
+                                            className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary-600 outline-none resize-none"
+                                            rows={3}
+                                            placeholder="Hi, I'm interested in your services for my wedding on..."
+                                            id="enquiry-message"
+                                        ></textarea>
+                                        <Button onClick={handleBook} className="w-full h-14 rounded-full bg-slate-900 text-white font-black text-lg hover:bg-primary-600 shadow-xl transition-all">
+                                            Send Inquiry
+                                        </Button>
+                                    </div>
+                                    <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">Connect Directly with Artisan</p>
                                 </div>
-                                <Button onClick={handleBook} className="w-full h-16 rounded-full bg-slate-900 text-white font-black text-lg hover:bg-primary-600 shadow-2xl transition-all">
-                                    Initiate Reservation
-                                </Button>
-                                <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">Secure Payment & Direct Communication</p>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Services Section */}
-                {services.length > 0 && (
-                    <div className="mt-32">
-                        <div className="text-center mb-16">
-                            <h2 className="text-4xl font-serif font-bold text-slate-900 mb-2 italic">Available Experiences</h2>
-                            <div className="w-12 h-1 bg-primary-600 mx-auto"></div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                            {services.map(service => (
-                                <div key={service.id} className="group p-10 rounded-[3rem] bg-white border border-slate-100 hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 -mr-16 -mt-16 rounded-full group-hover:scale-[10] transition-transform duration-1000 opacity-20"></div>
-                                    <div className="relative z-10">
-                                        <h3 className="text-2xl font-bold text-slate-900 mb-4">{service.name}</h3>
-                                        <p className="text-slate-500 font-light text-sm mb-10 leading-relaxed">{service.description}</p>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-2xl font-serif font-black text-slate-900">${service.price}</span>
-                                            <span className="text-[10px] font-bold text-primary-600 uppercase tracking-widest cursor-pointer hover:underline">Select Service →</span>
+                    {/* Services Section */}
+                    {services.length > 0 && (
+                        <div className="mt-32">
+                            <div className="text-center mb-16">
+                                <h2 className="text-4xl font-serif font-bold text-slate-900 mb-2 italic">Available Experiences</h2>
+                                <div className="w-12 h-1 bg-primary-600 mx-auto"></div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                {services.map(service => (
+                                    <div key={service.id} className="group p-10 rounded-[3rem] bg-white border border-slate-100 hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 -mr-16 -mt-16 rounded-full group-hover:scale-[10] transition-transform duration-1000 opacity-20"></div>
+                                        <div className="relative z-10">
+                                            <h3 className="text-2xl font-bold text-slate-900 mb-4">{service.name}</h3>
+                                            <p className="text-slate-500 font-light text-sm mb-10 leading-relaxed">{service.description}</p>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-2xl font-serif font-black text-slate-900">${service.price}</span>
+                                                <span className="text-[10px] font-bold text-primary-600 uppercase tracking-widest cursor-pointer hover:underline">Select Service →</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

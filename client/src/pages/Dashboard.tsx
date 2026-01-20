@@ -97,31 +97,36 @@ export function Dashboard() {
 
                             <div className="space-y-6">
                                 {bookings.length > 0 ? bookings.map((booking: any) => (
-                                    <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-3xl bg-slate-50/50 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 transition-all group gap-4">
-                                        <div className="flex items-center gap-6">
-                                            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm overflow-hidden p-1 border border-slate-200">
-                                                <div className="w-full h-full rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center text-primary-600 font-black text-xl">
-                                                    {booking.vendor?.business_name?.charAt(0) || 'V'}
+                                    <Link to={`/negotiation/${booking.id}`} key={booking.id} className="block">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-3xl bg-slate-50/50 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 transition-all group gap-4">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm overflow-hidden p-1 border border-slate-200">
+                                                    <div className="w-full h-full rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center text-primary-600 font-black text-xl">
+                                                        {booking.vendor?.business_name?.charAt(0) || 'V'}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 text-lg group-hover:text-primary-600 transition-colors uppercase tracking-tight">{booking.vendor?.business_name || 'Artisan Portfolio'}</h4>
+                                                    <div className="flex items-center gap-2">
+                                                        {booking.isEnquiry && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 rounded-full font-bold">INQUIRY</span>}
+                                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">{booking.date}</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-slate-900 text-lg group-hover:text-primary-600 transition-colors uppercase tracking-tight">{booking.vendor?.business_name || 'Artisan Portfolio'}</h4>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">{booking.date}</p>
+                                            <div className="flex items-center gap-4">
+                                                <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${booking.status === 'confirmed' ? 'bg-green-50 text-green-600' :
+                                                    booking.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                    {booking.status}
+                                                </span>
+                                                <button className="text-slate-400 hover:text-primary-600 transition-colors">
+                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${booking.status === 'confirmed' ? 'bg-green-50 text-green-600' :
-                                                    booking.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-500'
-                                                }`}>
-                                                {booking.status}
-                                            </span>
-                                            <button className="text-slate-400 hover:text-primary-600 transition-colors">
-                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 )) : (
                                     <div className="py-20 text-center">
                                         <p className="text-slate-400 italic font-light">"The collection is empty. Let's begin the curation."</p>

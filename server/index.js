@@ -253,6 +253,70 @@ app.get('/api/negotiation/:id', async (req, res) => {
     res.json({ contextItem: booking, messages });
 });
 
+app.post('/api/messages', async (req, res) => {
+    const { bookingId, enquiryId, senderId, content, type, metadata } = req.body;
+    const roomId = bookingId || enquiryId;
+
+    if (!supabase) {
+        // Mock Response
+        const msg = {
+            id: 'mock_msg_' + Date.now(),
+            sender_id: senderId,
+            content,
+            type: type || 'text',
+            metadata,
+            created_at: new Date().toISOString()
+        };
+        // Emit to socket for real-time update in other clients
+        const io = req.app.get('io');
+        if (io) io.to(roomId).emit('receive-message', {
+            id: msg.id,
+            senderId: msg.sender_id,
+            text: msg.content,
+            timestamp: msg.created_at,
+            type: msg.type,
+            metadata: msg.metadata
+        });
+        return res.status(201).json(msg);
+    }
+
+    const { data, error } = await supabase.from('messages').insert({
+        booking_id: bookingId || null,
+        enquiry_id: enquiryId || null,
+        sender_id: senderId,
+        content,
+        type: type || 'text',
+        metadata: metadata || null
+    }).select().single();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    const io = req.app.get('io');
+    if (io) {
+        // Broadcast
+        io.to(roomId).emit('receive-message', {
+            id: data.id,
+            senderId: data.sender_id,
+            text: data.content,
+            timestamp: data.created_at,
+            type: data.type,
+            metadata: data.metadata
+        });
+
+        // Handle Status Changes
+        if (type === 'acceptance') {
+            if (bookingId) {
+                await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', bookingId);
+            } else if (enquiryId) {
+                await supabase.from('enquiries').update({ status: 'confirmed' }).eq('id', enquiryId);
+            }
+            io.to(roomId).emit('status-change', 'confirmed');
+        }
+    }
+
+    res.status(201).json(data);
+});
+
 
 // --- REAL-TIME SERVER ---
 const server = http.createServer(app);

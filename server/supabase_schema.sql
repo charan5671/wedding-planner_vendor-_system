@@ -245,6 +245,28 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger the function every time a user is created
+-- Trigger the function every time a user is created
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- --------------------------------------------------------
+-- 11. ADDITIONAL PERFORMANCE INDEXES
+-- --------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_services_vendor ON public.services(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_enquiries_vendor ON public.enquiries(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_enquiries_user ON public.enquiries(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_vendor ON public.reviews(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_booking ON public.reviews(booking_id);
+
+-- --------------------------------------------------------
+-- 12. REAL-TIME SUBSCRIPTIONS
+-- --------------------------------------------------------
+-- Enable Realtime for chat, bookings, and notifications (enquiries)
+BEGIN;
+  DROP PUBLICATION IF EXISTS supabase_realtime;
+  CREATE PUBLICATION supabase_realtime FOR TABLE messages, bookings, enquiries, notifications;
+COMMIT;
+-- Note: 'notifications' table schema was missing in previous steps, ensuring it exists or removing from publication if not ready.
+-- We will stick to messages, bookings, enquiries for now.
+ALTER PUBLICATION supabase_realtime SET TABLE messages, bookings, enquiries;
