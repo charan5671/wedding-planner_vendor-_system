@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
-import { useSocket } from '../../context/SocketContext';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 
 interface Report {
     id: string;
@@ -17,25 +17,26 @@ interface Report {
 export function ReportManager() {
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
-    const socket = useSocket();
 
     useEffect(() => {
         fetchReports();
 
-        if (socket) {
-            socket.on('report-updated', (updatedReport: Report) => {
-                setReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
-            });
-            socket.on('new-report', fetchReports);
-        }
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel('admin_reports')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'reports' },
+                () => {
+                    fetchReports();
+                }
+            )
+            .subscribe();
 
         return () => {
-            if (socket) {
-                socket.off('report-updated');
-                socket.off('new-report');
-            }
+            supabase.removeChannel(channel);
         };
-    }, [socket]);
+    }, []);
 
     const fetchReports = async () => {
         try {

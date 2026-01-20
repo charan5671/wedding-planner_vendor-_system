@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
-import { useSocket } from '../../context/SocketContext';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 
 interface Booking {
     id: string;
@@ -24,29 +24,24 @@ export function AdminDashboard() {
     });
     const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
-    const socket = useSocket();
 
     useEffect(() => {
         fetchStats();
 
-        if (socket) {
-            const handleUpdate = () => {
-                fetchStats(); // For simplicity, we re-fetch all stats on any relevant update
-            };
+        // --- SUPABASE REALTIME ---
+        // Create channels for tables we want to monitor
+        const channel = supabase
+            .channel('admin_dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => fetchStats())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'vendors' }, () => fetchStats())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchStats())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, () => fetchStats())
+            .subscribe();
 
-            socket.on('booking-updated', handleUpdate);
-            socket.on('vendor-status-changed', handleUpdate);
-            socket.on('user-status-changed', handleUpdate);
-            socket.on('report-updated', handleUpdate);
-
-            return () => {
-                socket.off('booking-updated', handleUpdate);
-                socket.off('vendor-status-changed', handleUpdate);
-                socket.off('user-status-changed', handleUpdate);
-                socket.off('report-updated', handleUpdate);
-            };
-        }
-    }, [socket]);
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     const fetchStats = async () => {
         try {

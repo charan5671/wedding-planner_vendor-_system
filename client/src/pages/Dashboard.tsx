@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/api';
 import { Button } from '../components/Button';
 import { Link, Navigate } from 'react-router-dom';
 import { MOCK_BOOKINGS } from '../lib/mockData';
+import { supabase } from '../lib/supabase'; // Use Supabase
 
 export function Dashboard() {
     const { user, profile } = useAuth();
@@ -11,9 +12,19 @@ export function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) {
-            fetchData();
-        }
+        if (!user) return;
+        fetchData();
+
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel(`couple_dashboard_${user.uid}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `user_id=eq.${user.uid}` }, () => fetchData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'enquiries', filter: `user_id=eq.${user.uid}` }, () => fetchData())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user]);
 
     const fetchData = async () => {

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { db, isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
-import { collection, query, where, getDocs, getDoc, doc, orderBy, limit } from 'firebase/firestore';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 
 interface Booking {
     id: string;
@@ -34,7 +33,19 @@ export function VendorDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) fetchDashboardData();
+        if (!user) return;
+        fetchDashboardData();
+
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel(`vendor_dashboard_${user.uid}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `vendor_id=eq.${user.uid}` }, () => fetchDashboardData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'enquiries', filter: `vendor_id=eq.${user.uid}` }, () => fetchDashboardData())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user]);
 
     const fetchDashboardData = async () => {
@@ -42,106 +53,48 @@ export function VendorDashboard() {
         setLoading(true);
 
         try {
-            if (!isFirebaseConfigured) {
-                try {
-                    // Fetch vendor profile first to get vendor ID if user.uid is same
-                    const vendor = await apiFetch(`/vendors/user/${user.uid}`).catch(() => null);
-                    const vendorId = vendor ? vendor.id : user.uid;
+            // Fetch vendor profile first to get vendor ID
+            const vendor = await apiFetch(`/vendors/user/${user.uid}`).catch(() => null);
+            const vendorId = vendor ? vendor.id : user.uid;
 
-                    // Fetch stats/analytics
-                    const analytics = await apiFetch(`/vendors/${vendorId}/analytics`).catch(() => ({
-                        totalBookings: 0,
-                        confirmedBookings: 0,
-                        pendingBookings: 0,
-                        totalRevenue: 0,
-                        averageRating: 0,
-                        totalReviews: 0
-                    }));
+            // Fetch stats/analytics from Supabase Backend
+            const analytics = await apiFetch(`/vendors/${vendorId}/analytics`).catch(() => ({
+                totalBookings: 0,
+                confirmedBookings: 0,
+                pendingBookings: 0,
+                totalRevenue: 0,
+                averageRating: 0,
+                totalReviews: 0
+            }));
 
-                    // Fetch enquiries
-                    const enquiries = await apiFetch(`/enquiries/vendor/${vendorId}`).catch(() => []);
+            // Fetch enquiries
+            const enquiries = await apiFetch(`/enquiries/vendor/${vendorId}`).catch(() => []);
 
-                    // Fetch bookings
-                    const bookings = await apiFetch(`/bookings?vendorId=${vendorId}`).catch(() => []);
+            // Fetch bookings
+            const bookings = await apiFetch(`/bookings?vendorId=${vendorId}`).catch(() => []);
 
-                    setStats({
-                        bookings: analytics.totalBookings || 0,
-                        enquiries: enquiries.length || 0,
-                        rating: analytics.averageRating || 0,
-                        views: 450 // Mocked
-                    });
+            setStats({
+                bookings: analytics.totalBookings || 0,
+                enquiries: enquiries.length || 0,
+                rating: analytics.averageRating || 0,
+                views: 450 // Mocked
+            });
 
-                    setRecentEnquiries(enquiries.slice(0, 5).map((e: any) => ({
-                        id: e.id,
-                        message: e.message,
-                        status: e.status === 'pending' ? 'unread' : 'read',
-                        created_at: e.createdAt,
-                        vendor_id: e.vendorId
-                    })));
+            setRecentEnquiries(enquiries.slice(0, 5).map((e: any) => ({
+                id: e.id,
+                message: e.message,
+                status: e.status === 'pending' ? 'unread' : 'read',
+                created_at: e.createdAt,
+                vendor_id: e.vendorId
+            })));
 
-                    setUpcomingBookings(bookings.slice(0, 5).map((b: any) => ({
-                        id: b.id,
-                        date: b.date,
-                        status: b.status,
-                        vendor_id: b.vendorId,
-                        user_id: b.userId
-                    })));
-
-                    setLoading(false);
-                    return;
-                } catch (err) {
-                    console.warn('Local API failed for vendor dashboard:', err);
-                    // Fallback to mock data
-                }
-            }
-
-            // Get vendor details from 'vendors' collection using user.uid as doc ID
-            const vendorDocRef = doc(db, 'vendors', user.uid);
-            const vendorSnap = await getDoc(vendorDocRef);
-
-            if (vendorSnap.exists()) {
-                const vendorData = vendorSnap.data();
-
-                // Bookings
-                const bookingsRef = collection(db, 'bookings');
-                const bookingsQuery = query(bookingsRef, where('vendor_id', '==', user.uid));
-                const bookingsSnap = await getDocs(bookingsQuery);
-                const bookingsCount = bookingsSnap.size;
-
-                // Enquiries
-                const enquiriesRef = collection(db, 'enquiries');
-                const enquiriesQuery = query(enquiriesRef, where('vendor_id', '==', user.uid));
-                const enquiriesSnap = await getDocs(enquiriesQuery);
-                const enquiriesCount = enquiriesSnap.size;
-
-                setStats({
-                    bookings: bookingsCount || 0,
-                    enquiries: enquiriesCount || 0,
-                    rating: vendorData.rating || 0,
-                    views: 124 // Mock
-                });
-
-                // Recent Enquiries
-                const recentEnquiriesQuery = query(
-                    enquiriesRef,
-                    where('vendor_id', '==', user.uid),
-                    orderBy('created_at', 'desc'),
-                    limit(5)
-                );
-                const recentEnquiriesSnap = await getDocs(recentEnquiriesQuery);
-                setRecentEnquiries(recentEnquiriesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Enquiry)));
-
-                // Upcoming Bookings
-                const recentBookingsQuery = query(
-                    bookingsRef,
-                    where('vendor_id', '==', user.uid),
-                    where('date', '>=', new Date().toISOString().split('T')[0]),
-                    limit(5)
-                );
-
-                const recentBookingsSnap = await getDocs(recentBookingsQuery);
-                setUpcomingBookings(recentBookingsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Booking)));
-            }
+            setUpcomingBookings(bookings.slice(0, 5).map((b: any) => ({
+                id: b.id,
+                date: b.date,
+                status: b.status,
+                vendor_id: b.vendorId,
+                user_id: b.userId
+            })));
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {

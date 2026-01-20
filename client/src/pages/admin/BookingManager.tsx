@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 import { Button } from '../../components/Button';
-import { useSocket } from '../../context/SocketContext';
 
 interface Booking {
     id: string;
@@ -19,23 +19,27 @@ export function BookingManager() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
-    const socket = useSocket();
 
     useEffect(() => {
         fetchBookings();
 
-        if (socket) {
-            socket.on('booking-updated', (data: { bookingId: string, status: 'pending' | 'confirmed' | 'cancelled' }) => {
-                setBookings(prev => prev.map(b =>
-                    b.id === data.bookingId ? { ...b, status: data.status } : b
-                ));
-            });
-        }
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel('admin_bookings')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'bookings' },
+                () => {
+                    // Re-fetch on any change for simplicity and consistency
+                    fetchBookings();
+                }
+            )
+            .subscribe();
 
         return () => {
-            if (socket) socket.off('booking-updated');
+            supabase.removeChannel(channel);
         };
-    }, [socket]);
+    }, []);
 
     const fetchBookings = async () => {
         try {

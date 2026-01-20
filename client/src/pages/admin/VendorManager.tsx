@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 import { Button } from '../../components/Button';
-import { useSocket } from '../../context/SocketContext';
 
 interface Vendor {
     id: string;
@@ -19,23 +19,26 @@ export function VendorManager() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
-    const socket = useSocket();
 
     useEffect(() => {
         fetchVendors();
 
-        if (socket) {
-            socket.on('vendor-status-changed', (data: any) => {
-                setVendors(prev => prev.map(v =>
-                    v.id === data.vendorId ? { ...v, ...data } : v
-                ));
-            });
-        }
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel('admin_vendors')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'vendors' },
+                () => {
+                    fetchVendors();
+                }
+            )
+            .subscribe();
 
         return () => {
-            if (socket) socket.off('vendor-status-changed');
+            supabase.removeChannel(channel);
         };
-    }, [socket]);
+    }, []);
 
     const fetchVendors = async () => {
         try {

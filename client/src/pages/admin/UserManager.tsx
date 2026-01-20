@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 import { Button } from '../../components/Button';
-import { useSocket } from '../../context/SocketContext';
 
 interface User {
     id: string;
@@ -16,23 +16,26 @@ export function UserManager() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const socket = useSocket();
 
     useEffect(() => {
         fetchUsers();
 
-        if (socket) {
-            socket.on('user-status-changed', (data: any) => {
-                setUsers(prev => prev.map(u =>
-                    u.id === data.userId ? { ...u, ...data } : u
-                ));
-            });
-        }
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel('admin_users')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'profiles' },
+                () => {
+                    fetchUsers();
+                }
+            )
+            .subscribe();
 
         return () => {
-            if (socket) socket.off('user-status-changed');
+            supabase.removeChannel(channel);
         };
-    }, [socket]);
+    }, []);
 
     const fetchUsers = async () => {
         try {
@@ -123,8 +126,8 @@ export function UserManager() {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
                                         <div className={`h-12 w-12 flex-shrink-0 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm ${user.role === 'admin' ? 'bg-indigo-100 text-indigo-700' :
-                                                user.role === 'vendor' ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-rose-100 text-rose-700'
+                                            user.role === 'vendor' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-rose-100 text-rose-700'
                                             }`}>
                                             {user.full_name?.[0]?.toUpperCase() || '?'}
                                         </div>
@@ -148,8 +151,8 @@ export function UserManager() {
                                         <button
                                             onClick={() => toggleSuspension(user.id, !!user.is_suspended)}
                                             className={`w-32 py-1 px-3 rounded-lg text-[10px] uppercase tracking-tighter font-bold transition-all shadow-sm ${user.is_suspended
-                                                    ? 'bg-red-500 text-white hover:bg-red-600'
-                                                    : 'bg-green-500 text-white hover:bg-green-600'
+                                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                                : 'bg-green-500 text-white hover:bg-green-600'
                                                 }`}
                                         >
                                             {user.is_suspended ? 'Suspended' : 'Active Account'}

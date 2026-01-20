@@ -24,7 +24,6 @@ import { VendorProfile } from './pages/vendor/Profile';
 
 import { PublicLayout } from './layouts/PublicLayout';
 
-import { SocketProvider } from './context/SocketContext';
 import { ReportManager } from './pages/admin/ReportManager';
 import { Dashboard } from './pages/Dashboard';
 
@@ -58,60 +57,58 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode,
 function App() {
   return (
     <AuthProvider>
-      <SocketProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes with Navbar/Footer */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/vendors" element={<VendorSearch />} />
-              <Route path="/vendors/:id" element={<VendorDetail />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* Negotiation Room (Can be public-ish but needs auth) */}
-              <Route path="/negotiation/:id" element={
-                <ProtectedRoute>
-                  <NegotiationRoom />
-                </ProtectedRoute>
-              } />
-            </Route>
-
-            {/* Admin Routes (Independent Layout) */}
-            <Route path="/admin" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminLayout />
+      <Router>
+        <Routes>
+          {/* Public Routes with Navbar/Footer */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/vendors" element={<VendorSearch />} />
+            <Route path="/vendors/:id" element={<VendorDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
               </ProtectedRoute>
-            }>
-              <Route index element={<AdminDashboard />} />
-              <Route path="vendors" element={<VendorManager />} />
-              <Route path="users" element={<UserManager />} />
-              <Route path="bookings" element={<BookingManager />} />
-              <Route path="reports" element={<ReportManager />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
+            } />
 
-            {/* Vendor Routes (Independent Layout) */}
-            <Route path="/vendor" element={
-              <ProtectedRoute allowedRoles={['vendor']}>
-                <VendorLayout />
+            {/* Negotiation Room (Can be public-ish but needs auth) */}
+            <Route path="/negotiation/:id" element={
+              <ProtectedRoute>
+                <NegotiationRoom />
               </ProtectedRoute>
-            }>
-              <Route path="dashboard" element={<VendorDashboard />} />
-              <Route path="services" element={<ServiceEditor />} />
-              <Route path="enquiries" element={<InquiryList />} />
-              <Route path="bookings" element={<VendorBookings />} />
-              <Route path="profile" element={<VendorProfile />} />
-            </Route>
-          </Routes>
-        </Router>
-      </SocketProvider>
+            } />
+          </Route>
+
+          {/* Admin Routes (Independent Layout) */}
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboard />} />
+            <Route path="vendors" element={<VendorManager />} />
+            <Route path="users" element={<UserManager />} />
+            <Route path="bookings" element={<BookingManager />} />
+            <Route path="reports" element={<ReportManager />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* Vendor Routes (Independent Layout) */}
+          <Route path="/vendor" element={
+            <ProtectedRoute allowedRoles={['vendor']}>
+              <VendorLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<VendorDashboard />} />
+            <Route path="services" element={<ServiceEditor />} />
+            <Route path="enquiries" element={<InquiryList />} />
+            <Route path="bookings" element={<VendorBookings />} />
+            <Route path="profile" element={<VendorProfile />} />
+          </Route>
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }

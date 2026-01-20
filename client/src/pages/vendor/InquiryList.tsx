@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { isFirebaseConfigured } from '../../lib/firebase';
 import { apiFetch } from '../../lib/api';
+import { supabase } from '../../lib/supabase'; // Use Supabase
 
 interface Enquiry {
     id: string;
@@ -19,39 +19,24 @@ export function InquiryList() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) fetchEnquiries();
+        if (!user) return;
+        fetchEnquiries();
+
+        // --- SUPABASE REALTIME ---
+        const channel = supabase
+            .channel(`vendor_enquiries_${user.uid}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'enquiries', filter: `vendor_id=eq.${user.uid}` }, () => fetchEnquiries())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user]);
 
     const fetchEnquiries = async () => {
         if (!user) return;
         try {
-            if (!isFirebaseConfigured) {
-                // Demo Data
-                setEnquiries([
-                    {
-                        id: 'enq1',
-                        message: 'Interested in your Premium Photography package for August 2026.',
-                        status: 'pending',
-                        created_at: new Date().toISOString(),
-                        user_name: 'Sarah & Mark',
-                        user_email: 'sarah@example.com',
-                        vendor_id: user.uid
-                    },
-                    {
-                        id: 'enq2',
-                        message: 'Do you offer custom packages for smaller weddings?',
-                        status: 'responded',
-                        created_at: new Date(Date.now() - 86400000).toISOString(),
-                        user_name: 'Jessica Thompson',
-                        user_email: 'jessica@example.com',
-                        vendor_id: user.uid
-                    }
-                ]);
-                setLoading(false);
-                return;
-            }
-
-            // Using apiFetch as per Dashboard pattern or direct Firestore
+            // Fetch enquiries from Supabase Backend
             const data = await apiFetch(`/enquiries/vendor/${user.uid}`).catch(() => []);
             setEnquiries(data.map((e: any) => ({
                 id: e.id,
@@ -62,7 +47,6 @@ export function InquiryList() {
                 user_email: e.userEmail || '',
                 vendor_id: e.vendorId
             })));
-
         } catch (error) {
             console.error('Error fetching enquiries:', error);
         } finally {
