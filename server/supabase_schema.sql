@@ -206,7 +206,26 @@ CREATE POLICY "Users can view own reports" ON public.reports FOR SELECT USING (a
 CREATE POLICY "Users can insert reports" ON public.reports FOR INSERT WITH CHECK (auth.uid() = reporter_id);
 
 -- --------------------------------------------------------
--- 10. INDEXES & TRIGGERS
+-- 10. NOTIFICATIONS
+-- --------------------------------------------------------
+CREATE TABLE public.notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    type TEXT NOT NULL, -- 'booking_request', 'message', 'status_change', 'system'
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    link TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "System inserts notifications" ON public.notifications FOR INSERT WITH CHECK (true); -- Simplified for now, ideally strictly controlled
+
+-- --------------------------------------------------------
+-- 11. INDEXES & TRIGGERS
 -- --------------------------------------------------------
 -- Search optimization
 CREATE INDEX idx_vendors_location ON public.vendors(location);
@@ -269,4 +288,4 @@ BEGIN;
 COMMIT;
 -- Note: 'notifications' table schema was missing in previous steps, ensuring it exists or removing from publication if not ready.
 -- We will stick to messages, bookings, enquiries for now.
-ALTER PUBLICATION supabase_realtime SET TABLE messages, bookings, enquiries;
+ALTER PUBLICATION supabase_realtime SET TABLE messages, bookings, enquiries, reports, profiles, vendors;

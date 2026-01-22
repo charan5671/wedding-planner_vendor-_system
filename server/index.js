@@ -1,6 +1,5 @@
 import express from 'express';
 import http from 'http';
-import { Server } from 'socket.io';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
@@ -9,15 +8,6 @@ import dotenv from 'dotenv';
 import adminRoutes from './routes/admin.js';
 import vendorRoutes from './routes/vendors.js';
 import authRoutes from './routes/auth.js';
-// import bookingRoutes from './routes/bookings.js';
-// import budgetRoutes from './routes/budget.js';
-// import notificationRoutes from './routes/notifications.js';
-// import wishlistRoutes from './routes/wishlist.js';
-// import reviewRoutes from './routes/reviews.js';
-// import paymentRoutes from './routes/payments.js';
-// import analyticsRoutes from './routes/analytics.js';
-// import enquiryRoutes from './routes/enquiries.js';
-// import messageRoutes from './routes/messages.js';
 
 dotenv.config();
 
@@ -94,8 +84,6 @@ app.get('/api/bookings', async (req, res) => {
 
 app.patch('/api/bookings/:id', async (req, res) => {
     if (!supabase) {
-        const io = req.app.get('io');
-        if (io) io.emit('booking-updated', { bookingId: req.params.id, status: req.body.status });
         return res.json({ id: req.params.id, status: req.body.status });
     }
     const { status } = req.body;
@@ -106,9 +94,6 @@ app.patch('/api/bookings/:id', async (req, res) => {
         .single();
 
     if (error) return res.status(500).json({ error: error.message });
-
-    const io = req.app.get('io');
-    if (io) io.emit('booking-status-updated', { bookingId: req.params.id, status });
 
     res.json(data);
 });
@@ -255,7 +240,6 @@ app.get('/api/negotiation/:id', async (req, res) => {
 
 app.post('/api/messages', async (req, res) => {
     const { bookingId, enquiryId, senderId, content, type, metadata } = req.body;
-    const roomId = bookingId || enquiryId;
 
     if (!supabase) {
         // Mock Response
@@ -267,16 +251,6 @@ app.post('/api/messages', async (req, res) => {
             metadata,
             created_at: new Date().toISOString()
         };
-        // Emit to socket for real-time update in other clients
-        const io = req.app.get('io');
-        if (io) io.to(roomId).emit('receive-message', {
-            id: msg.id,
-            senderId: msg.sender_id,
-            text: msg.content,
-            timestamp: msg.created_at,
-            type: msg.type,
-            metadata: msg.metadata
-        });
         return res.status(201).json(msg);
     }
 
@@ -291,26 +265,12 @@ app.post('/api/messages', async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    const io = req.app.get('io');
-    if (io) {
-        // Broadcast
-        io.to(roomId).emit('receive-message', {
-            id: data.id,
-            senderId: data.sender_id,
-            text: data.content,
-            timestamp: data.created_at,
-            type: data.type,
-            metadata: data.metadata
-        });
-
-        // Handle Status Changes
-        if (type === 'acceptance') {
-            if (bookingId) {
-                await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', bookingId);
-            } else if (enquiryId) {
-                await supabase.from('enquiries').update({ status: 'confirmed' }).eq('id', enquiryId);
-            }
-            io.to(roomId).emit('status-change', 'confirmed');
+    // Handle Status Changes via Database Actions (which trigger Realtime)
+    if (type === 'acceptance') {
+        if (bookingId) {
+            await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', bookingId);
+        } else if (enquiryId) {
+            await supabase.from('enquiries').update({ status: 'confirmed' }).eq('id', enquiryId);
         }
     }
 
@@ -320,51 +280,6 @@ app.post('/api/messages', async (req, res) => {
 
 // --- REAL-TIME SERVER ---
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
-app.set('io', io);
-
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-
-    socket.on('join-room', (roomId) => {
-        socket.join(roomId);
-        console.log(`User ${socket.id} joined room ${roomId}`);
-    });
-
-    socket.on('send-message', async (data) => {
-        const roomId = data.bookingId || data.enquiryId;
-        if (supabase) {
-            const { error } = await supabase.from('messages').insert({
-                booking_id: data.bookingId || null,
-                enquiry_id: data.enquiryId || null,
-                sender_id: data.senderId,
-                content: data.content,
-                type: data.type || 'text',
-                metadata: data.metadata || null
-            });
-            if (error) console.error('Error saving message:', error);
-
-            if (data.type === 'acceptance') {
-                if (data.bookingId) {
-                    await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', data.bookingId);
-                } else if (data.enquiryId) {
-                    await supabase.from('enquiries').update({ status: 'confirmed' }).eq('id', data.enquiryId);
-                }
-                io.to(roomId).emit('status-change', 'confirmed');
-            }
-        }
-        io.to(roomId).emit('receive-message', data);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
-});
 
 // --- CATCH-ALL FOR DIAGNOSTICS ---
 app.use((req, res) => {
